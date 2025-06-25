@@ -15,6 +15,7 @@ export default function SwapCard({ account }) {
   const [swapRate, setSwapRate] = useState(0);
   const [atoFeePercent, setAtoFeePercent] = useState(0);
   const [monFlatFee, setMonFlatFee] = useState(0);
+  const [showSettings, setShowSettings] = useState(false); // حالة عرض الإعدادات (يمكن إضافتها لاحقًا)
 
   const fetchContractData = useCallback(async () => {
     if (!window.ethereum || !account) return;
@@ -46,19 +47,15 @@ export default function SwapCard({ account }) {
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
 
-      // رصيد MON (العملة الأصلية)
+      // رصيد MON
       const monBal = await provider.getBalance(account);
       setMonBalance(ethers.formatEther(monBal));
 
-      // رصيد ATO (رمز ERC20)
-      if (TOKEN_ADDRESSES.ATO && TOKEN_ADDRESSES.ATO !== "0x...") { // تأكد من تحديث العنوان
+      // رصيد ATO
+      if (TOKEN_ADDRESSES.ATO && TOKEN_ADDRESSES.ATO !== "0x...") {
         const atoContract = new ethers.Contract(TOKEN_ADDRESSES.ATO, ERC20_ABI, provider);
         const atoBal = await atoContract.balanceOf(account);
-        // يجب جلب decimals من عقد الرمز المميز إذا لم تكن ثابتة 18
-        // هنا نفترض 18 للمثال، ولكن يفضل جلبها من عقد الـ ATO الفعلي:
-        // const atoDecimals = await atoContract.decimals(); 
-        // setAtoBalance(ethers.formatUnits(atoBal, atoDecimals));
-        setAtoBalance(ethers.formatEther(atoBal)); // افتراض أن ATO لديه 18 decimals
+        setAtoBalance(ethers.formatEther(atoBal));
       } else {
         setAtoBalance("0");
       }
@@ -98,7 +95,6 @@ export default function SwapCard({ account }) {
 
   const handleMonInputChange = (e) => {
     const value = e.target.value;
-    // السماح فقط بالأرقام والنقطة العشرية
     if (/^\d*\.?\d*$/.test(value)) {
         setMonAmount(value);
     }
@@ -120,11 +116,10 @@ export default function SwapCard({ account }) {
 
     try {
       setIsLoading(true);
-      setStatus("⏳ Processing swap...");
+      setStatus("⏳ Swapping ${monAmount} MON...");
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
 
-      // التحقق من أن الساينر موجود ومتصل بالشبكة الصحيحة
       const currentNetwork = await provider.getNetwork();
       if (currentNetwork.chainId !== BigInt(MONAD_TESTNET_CONFIG.chainId)) {
         setStatus("❌ Please switch to Monad Testnet in your wallet.");
@@ -145,7 +140,6 @@ export default function SwapCard({ account }) {
       fetchBalances();
     } catch (err) {
       console.error("Swap error:", err);
-      // رسائل خطأ أكثر وضوحًا
       let errorMessage = "Swap failed.";
       if (err.reason) {
           errorMessage += " Reason: " + err.reason;
@@ -163,11 +157,11 @@ export default function SwapCard({ account }) {
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-[#1C1C1C] p-6 rounded-2xl shadow-lg w-full max-w-md mx-auto border border-[#00FFA3] relative"
+      className="bg-[#1C1C1C] p-8 rounded-2xl shadow-lg w-full max-w-md mx-auto border border-[#00FFA3] relative flex flex-col" // إضافة flex flex-col
     >
-      {/* Header and Settings */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-white">Swap</h2>
+      {/* Header */}
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-3xl font-bold text-white">Swap</h2>
         <div className="flex space-x-3">
           <button
             onClick={fetchBalances}
@@ -181,65 +175,69 @@ export default function SwapCard({ account }) {
             className="text-gray-400 hover:text-[#00FFA3] transition"
             title="Settings"
             disabled={isLoading}
+            onClick={() => setShowSettings(!showSettings)} // مثال بسيط لتبديل عرض الإعدادات
           >
             <Settings size={20} />
           </button>
         </div>
       </div>
 
-      {/* Input - From */}
-      <div className="bg-[#0F0F0F] rounded-xl p-4 mb-4 border border-[#00FFA3]/30">
-        <div className="flex justify-between items-center mb-2">
-          <label htmlFor="mon-input" className="text-sm text-gray-400">You pay</label>
-          <span className="text-sm text-gray-400">Balance: {parseFloat(monBalance).toFixed(4)} MON</span>
+      {/* Swap Container */}
+      <div className="bg-[#0F0F0F] rounded-xl p-6 mb-6 border border-[#00FFA3]/30 flex flex-col space-y-4">
+        {/* From */}
+        <div>
+          <div className="flex justify-between items-center mb-2">
+            <label htmlFor="mon-input" className="text-sm text-gray-400">You pay</label>
+            <span className="text-sm text-gray-400">Balance: {parseFloat(monBalance).toFixed(4)} MON</span>
+          </div>
+          <div className="flex items-center bg-transparent border border-[#00FFA3]/50 rounded-lg overflow-hidden">
+            <input
+              id="mon-input"
+              className="flex-1 bg-transparent text-white text-2xl font-semibold focus:outline-none placeholder-gray-500 pl-4 py-2"
+              value={monAmount}
+              onChange={handleMonInputChange}
+              type="text"
+              inputMode="decimal"
+              placeholder="0.0"
+              disabled={isLoading}
+            />
+            <button className="flex items-center bg-[#00FFA3] text-black px-4 py-2 font-semibold hover:opacity-90 transition">
+              MON <ChevronDown size={16} className="ml-1" />
+            </button>
+          </div>
         </div>
-        <div className="flex items-center">
-          <input
-            id="mon-input"
-            className="flex-1 bg-transparent text-white text-2xl font-bold focus:outline-none placeholder-gray-500"
-            value={monAmount}
-            onChange={handleMonInputChange}
-            type="text" // تغيير إلى text للسماح بالتحكم في المدخلات بشكل أفضل
-            inputMode="decimal" // لتحسين لوحة المفاتيح على الجوال
-            placeholder="0.0"
-            disabled={isLoading}
-          />
-          <button className="flex items-center bg-[#00FFA3] text-black px-4 py-2 rounded-lg font-bold hover:opacity-90 transition">
-            MON <ChevronDown size={16} className="ml-1" />
-          </button>
-        </div>
-      </div>
 
-      {/* Swap Arrow / Icon */}
-      <div className="flex justify-center -mt-8 mb-4 z-10 relative">
-        <motion.div
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          className="bg-[#1C1C1C] border border-[#00FFA3] rounded-full p-2 text-[#00FFA3] cursor-pointer"
-        >
-          <Exchange size={24} />
-        </motion.div>
-      </div>
-
-      {/* Input - To */}
-      <div className="bg-[#0F0F0F] rounded-xl p-4 mb-6 border border-[#00FFA3]/30">
-        <div className="flex justify-between items-center mb-2">
-          <label htmlFor="ato-output" className="text-sm text-gray-400">You receive</label>
-          <span className="text-sm text-gray-400">Balance: {parseFloat(atoBalance).toFixed(4)} ATO</span>
+        {/* Swap Icon */}
+        <div className="flex justify-center items-center">
+          <motion.div
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="bg-[#1C1C1C] border border-[#00FFA3] rounded-full p-3 text-[#00FFA3] cursor-pointer"
+          >
+            <Exchange size={24} />
+          </motion.div>
         </div>
-        <div className="flex items-center">
-          <input
-            id="ato-output"
-            className="flex-1 bg-transparent text-white text-2xl font-bold focus:outline-none"
-            value={atoAmount}
-            type="text"
-            readOnly
-            placeholder="0.0"
-            disabled={isLoading}
-          />
-          <button className="flex items-center bg-[#FF00C8] text-white px-4 py-2 rounded-lg font-bold hover:opacity-90 transition">
-            ATO <ChevronDown size={16} className="ml-1" />
-          </button>
+
+        {/* To */}
+        <div>
+          <div className="flex justify-between items-center mb-2">
+            <label htmlFor="ato-output" className="text-sm text-gray-400">You receive</label>
+            <span className="text-sm text-gray-400">Balance: {parseFloat(atoBalance).toFixed(4)} ATO</span>
+          </div>
+          <div className="flex items-center bg-transparent border border-[#FF00C8]/50 rounded-lg overflow-hidden">
+            <input
+              id="ato-output"
+              className="flex-1 bg-transparent text-white text-2xl font-semibold focus:outline-none pl-4 py-2"
+              value={atoAmount}
+              type="text"
+              readOnly
+              placeholder="0.0"
+              disabled={isLoading}
+            />
+            <button className="flex items-center bg-[#FF00C8] text-white px-4 py-2 font-semibold hover:opacity-90 transition">
+              ATO <ChevronDown size={16} className="ml-1" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -250,24 +248,23 @@ export default function SwapCard({ account }) {
           <span>1 MON ≈ {swapRate} ATO</span>
         </div>
         <div className="flex justify-between">
-          <span>Flat Fee (MON):</span>
+          <span>Flat Fee:</span>
           <span>{monFlatFee} MON</span>
         </div>
         <div className="flex justify-between">
-          <span>ATO Fee (%):</span>
+          <span>Ato Fee:</span>
           <span>{(atoFeePercent / 100).toFixed(2)}%</span>
         </div>
       </div>
 
-
       {/* Swap Button */}
       <button
         onClick={handleSwap}
-        className={`w-full py-3 rounded-xl font-bold text-lg transition duration-200
+        className={`w-full py-4 rounded-xl font-bold text-lg transition duration-200
           ${account && !isLoading ? 'bg-[#00FFA3] text-black hover:opacity-90' : 'bg-gray-700 text-gray-400 cursor-not-allowed'}`}
         disabled={isLoading || !account}
       >
-        {isLoading ? "Swapping..." : (account ? "Swap" : "Connect Wallet")}
+        {isLoading ? `Swapping ${monAmount} MON...` : (account ? "Swap" : "Connect Wallet")}
       </button>
 
       {/* Status Message */}
@@ -275,11 +272,25 @@ export default function SwapCard({ account }) {
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className={`mt-4 text-center text-sm ${status.startsWith("❌") ? "text-red-400" : "text-green-400"}`}
+          className={`mt-6 text-center text-sm ${status.startsWith("❌") ? "text-red-400" : "text-green-400"}`}
         >
           {status}
         </motion.p>
       )}
+
+      {/* مثال بسيط لعرض الإعدادات (يمكن توسيعه لاحقًا) */}
+      {showSettings && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          className="absolute top-full left-0 mt-4 bg-[#1C1C1C] rounded-md shadow-md p-4 border border-[#00FFA3]/20 z-10"
+        >
+          <h3 className="text-md font-semibold mb-2">Settings</h3>
+          <p className="text-sm text-gray-400">Coming soon...</p>
+          {/* يمكنك إضافة خيارات مثل Slippage Tolerance هنا */}
+        </motion.div>
+      )}
     </motion.div>
   );
-  }
+         }
