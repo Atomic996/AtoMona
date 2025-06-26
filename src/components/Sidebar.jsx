@@ -1,5 +1,5 @@
 // src/components/Sidebar.jsx
-import { Menu, Sparkles } from "lucide-react"; // استيراد أيقونات Menu و Sparkles فقط
+import { Menu, Sparkles } from "lucide-react";
 
 export default function Sidebar({ onNavigate, currentPage }) {
   return (
@@ -12,7 +12,7 @@ export default function Sidebar({ onNavigate, currentPage }) {
         }`}
         title="Swap"
       >
-        <Menu size={28} /> {/* استخدام أيقونة Menu */}
+        <Menu size={28} />
       </button>
 
       {/* أيقونة Sparkles (للـ Swap) */}
@@ -23,7 +23,7 @@ export default function Sidebar({ onNavigate, currentPage }) {
         }`}
         title="Swap"
       >
-        <Sparkles size={28} /> {/* استخدام أيقونة Sparkles */}
+        <Sparkles size={28} />
       </button>
 
       {/* زر الـ NFTs */}
@@ -38,4 +38,4 @@ export default function Sidebar({ onNavigate, currentPage }) {
       </button>
     </aside>
   );
-        }
+}
