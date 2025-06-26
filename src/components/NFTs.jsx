@@ -1,3 +1,4 @@
+// src/components/NFTs.jsx
 import { Lock } from "lucide-react";
 
 export default function NFTs() {
