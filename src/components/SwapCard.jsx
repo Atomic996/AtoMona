@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { SWAP_CONTRACT_ADDRESS, ATOMON_SWAP_ABI, MONAD_TESTNET_CONFIG, TOKEN_ADDRESSES, ERC20_ABI } from "../config";
 import { ethers } from "ethers";
 import { motion } from "framer-motion";
-import { RefreshCcw, Settings, ChevronDown, Exchange } from "lucide-react";
+import { RefreshCcw, Settings, ChevronDown, ArrowUpDown } from "lucide-react"; // تم تغيير Exchange إلى ArrowUpDown
 
 export default function SwapCard({ account }) {
   const [monAmount, setMonAmount] = useState("");
@@ -214,7 +214,7 @@ export default function SwapCard({ account }) {
             whileTap={{ scale: 0.9 }}
             className="bg-[#1C1C1C] border border-[#00FFA3] rounded-full p-3 text-[#00FFA3] cursor-pointer"
           >
-            <Exchange size={24} />
+            <ArrowUpDown size={24} /> {/* تم استخدام أيقونة ArrowUpDown هنا */}
           </motion.div>
         </div>
 
@@ -293,4 +293,4 @@ export default function SwapCard({ account }) {
       )}
     </motion.div>
   );
-         }
+  }
