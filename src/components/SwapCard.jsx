@@ -1,7 +1,7 @@
 // src/components/SwapCard.jsx
 import { useState, useEffect, useCallback } from "react";
 import { SWAP_CONTRACT_ADDRESS, ATOMON_SWAP_ABI, MONAD_TESTNET_CONFIG, TOKEN_ADDRESSES, ERC20_ABI } from "../config";
-import { ethers } from "ethers";
+import { ethers } => "ethers";
 import { motion } from "framer-motion";
 import { RefreshCcw, Settings, ChevronDown, ArrowUpDown } from "lucide-react"; // تم تغيير Exchange إلى ArrowUpDown
 
@@ -157,7 +157,7 @@ export default function SwapCard({ account }) {
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-[#1C1C1C] p-8 rounded-2xl shadow-lg w-full max-w-md mx-auto border border-[#00FFA3] relative flex flex-col" // إضافة flex flex-col
+      className="bg-[#1C1C1C] p-8 rounded-2xl shadow-lg w-full max-w-md mx-auto border border-[#00FFA3] relative flex flex-col"
     >
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
@@ -175,7 +175,7 @@ export default function SwapCard({ account }) {
             className="text-gray-400 hover:text-[#00FFA3] transition"
             title="Settings"
             disabled={isLoading}
-            onClick={() => setShowSettings(!showSettings)} // مثال بسيط لتبديل عرض الإعدادات
+            onClick={() => setShowSettings(!showSettings)}
           >
             <Settings size={20} />
           </button>
@@ -214,7 +214,7 @@ export default function SwapCard({ account }) {
             whileTap={{ scale: 0.9 }}
             className="bg-[#1C1C1C] border border-[#00FFA3] rounded-full p-3 text-[#00FFA3] cursor-pointer"
           >
-            <ArrowUpDown size={24} /> {/* تم استخدام أيقونة ArrowUpDown هنا */}
+            <ArrowUpDown size={24} />
           </motion.div>
         </div>
 
@@ -293,4 +293,4 @@ export default function SwapCard({ account }) {
       )}
     </motion.div>
   );
-  }
+    }
