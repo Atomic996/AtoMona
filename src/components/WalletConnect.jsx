@@ -26,7 +26,6 @@ export default function WalletConnect({ setAccount, account }) {
   };
 
   const switchNetwork = async () => {
-    // تأكد من وجود window.ethereum قبل محاولة الوصول إليه
     if (!window.ethereum) {
         setNetworkStatus("MetaMask is not installed.");
         return;
@@ -81,19 +80,17 @@ export default function WalletConnect({ setAccount, account }) {
 
   useEffect(() => {
     if (window.ethereum) {
-      // تحقق من الاتصال الأولي عند التحميل
       window.ethereum.request({ method: 'eth_accounts' })
         .then(accounts => {
           if (accounts.length > 0) {
             setAccount(accounts[0]);
             switchNetwork();
           } else {
-            setAccount(null); // لا توجد حسابات متصلة
+            setAccount(null);
           }
         })
         .catch(console.error);
 
-      // استمع لتغييرات الحسابات
       const handleAccountsChanged = (accounts) => {
         setAccount(accounts[0] || null);
         if (accounts[0]) {
@@ -103,16 +100,13 @@ export default function WalletConnect({ setAccount, account }) {
         }
       };
 
-      // استمع لتغييرات الشبكة
       const handleChainChanged = (chainId) => {
-        // إعادة تحميل الصفحة لتحديث Provider والحالات بشكل صحيح
         window.location.reload(); 
       };
 
       window.ethereum.on("accountsChanged", handleAccountsChanged);
       window.ethereum.on("chainChanged", handleChainChanged);
 
-      // تنظيف المستمعين عند إلغاء تحميل المكون
       return () => {
         window.ethereum.off("accountsChanged", handleAccountsChanged);
         window.ethereum.off("chainChanged", handleChainChanged);
@@ -120,7 +114,7 @@ export default function WalletConnect({ setAccount, account }) {
     } else {
         setNetworkStatus("MetaMask not detected.");
     }
-  }, [setAccount]); // إضافة setAccount إلى dependencies لمنع التحذيرات، رغم أنها مستقرة
+  }, [setAccount]);
 
   return (
     <div className="absolute top-4 right-6 flex items-center space-x-2">
@@ -139,4 +133,4 @@ export default function WalletConnect({ setAccount, account }) {
       )}
     </div>
   );
-  }
+                }
